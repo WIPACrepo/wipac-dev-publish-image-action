@@ -10,6 +10,14 @@ inputs:
         include a registry if not storing with dockerhub
         ex: 'ghcr.io/foo/bar', 'foo/bar', etc.
     required: true
+  action:
+    description: |
+      what action to perform
+        BUILD        - build and publish image
+        CVMFS_BUILD  - request CVMFS to build and persist image
+        CVMFS_REMOVE - request CVMFS to delete the image
+    required: true
+  # OPTIONAL
   cvmfs_dest_dir:
     description: |
       IF USING CVMFS:
