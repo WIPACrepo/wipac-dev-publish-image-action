@@ -1,41 +1,30 @@
 name: build/publish docker & singularity (cvmfs) images
 
-
-on:
-  push:
-    branches-ignore:
-      - '**'
-    tags:
-      - '**'
-  workflow_dispatch:
-    inputs:
-      do_delete:
-        description: 'Delete from CVMFS instead of build?'
-        required: false
-        default: false
-        type: boolean
-      platform:
-        description: 'Platform to build docker image'
-        required: false
-        default: 'linux/amd64'
-        type: choice
-        options:
-          - linux/amd64
-          - linux/arm64
-  delete:
-    branches:
-      - '**'
-
-
-env:
-  IMAGE: ghcr.io/observation-management-service/ewms-condor-benchmarking
-  CVMFS_DEST_DIR: ewms/observation-management-service/
-  FREE_DISK_SPACE: false
-  DEFAULT_PLATFORM: linux/amd64  # matches 'workflow_dispatch.inputs.platform.default' above
-
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}
+inputs:
+  image:
+    description: |
+      the full-qualified image (tagless) --
+        include a registry if not storing with dockerhub
+        ex: 'ghcr.io/foo/bar', 'foo/bar', etc.
+    required: true
+  cvmfs-dest-dir:
+    description: |
+      IF USING CVMFS:
+        the CVMFS directory to place the singularity image built from the docker image
+    default: ""
+    required: false
+  free-disk-space:
+    description: |
+      FOR VERY LARGE IMAGES:
+        whether to free disk space on the GitHub runner before building the image
+    default: false
+    type: boolean
+    required: false
+  arch-platform:
+    description: |
+      what cpu architecture platform to use when building the image
+    default: "linux/amd64"
+    required: false
 
 
 runs:
