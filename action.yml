@@ -1,26 +1,29 @@
 name: build/publish docker & singularity (cvmfs) images
 
 inputs:
+  github_token:
+    description: 'a PAT so the action can git push to github (images and cvmfs requests)'
+    required: true
   image:
     description: |
       the full-qualified image (tagless) --
         include a registry if not storing with dockerhub
         ex: 'ghcr.io/foo/bar', 'foo/bar', etc.
     required: true
-  cvmfs-dest-dir:
+  cvmfs_dest_dir:
     description: |
       IF USING CVMFS:
         the CVMFS directory to place the singularity image built from the docker image
     default: ""
     required: false
-  free-disk-space:
+  free_disk_space:
     description: |
       FOR VERY LARGE IMAGES:
         whether to free disk space on the GitHub runner before building the image
     default: false
     type: boolean
     required: false
-  arch-platform:
+  build_platform:
     description: |
       what cpu architecture platform to use when building the image
     default: "linux/amd64"
@@ -57,8 +60,8 @@ runs:
     # docker:
     # if: github.event_name != 'delete' && github.event.inputs.do_delete != 'true'
 
-    - uses: jlumbroso/free-disk-space@main  # clears space for image build
-      if: ${{ inputs.free-disk-space == 'true' }}
+    - uses: jlumbroso/free_disk_space@main  # clears space for image build
+      if: ${{ inputs.free_disk_space == 'true' }}
       with:
         docker-images: false  # keep docker otherwise build will re-download them
 
@@ -92,10 +95,10 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.github_token }}
 
     - name: Setup QEMU (if platform requires it)
-      if: contains(inputs.arch-platform, 'arm')
+      if: contains(inputs.build_platform, 'arm')
       uses: docker/setup-qemu-action@v2
 
     - uses: docker/setup-buildx-action@v2
@@ -103,7 +106,7 @@ runs:
     - uses: docker/build-push-action@v3
       with:
         context: .
-        platforms: ${{ inputs.arch-platform }}
+        platforms: ${{ inputs.build_platform }}
         push: true
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
@@ -134,7 +137,7 @@ runs:
       with:
         github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # so job can git push
         docker_tags: ${{ steps.docker_meta.outputs.tags }}
-        dest_dir: ${{ inputs.cvmfs-dest-dir }}  # Required for constructing path pattern
+        dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
 
     # cvmfs-removal:
     # if: github.event_name == 'delete' || github.event.inputs.do_delete == 'true'
@@ -148,4 +151,4 @@ runs:
       with:
         github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # so job can git push
         delete_image_tags: "${{ env.IMAGE_TAG_NAME }}:${{ github.ref_name }}-[SHA]"
-        dest_dir: ${{ inputs.cvmfs-dest-dir }}  # Required for constructing path pattern
+        dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
