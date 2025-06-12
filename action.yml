@@ -13,15 +13,23 @@ inputs:
   action:
     description: |
       what action to perform
-        BUILD        - build and publish image
-        CVMFS_BUILD  - request CVMFS to build and persist image
-        CVMFS_REMOVE - request CVMFS to delete the image
+        BUILD        - build and publish 'input.image'
+        CVMFS_BUILD  - BUILD, then request CVMFS to build and persist 'input.image'
+        CVMFS_REMOVE - request CVMFS to delete 'input.cvmfs_remove_images'
+        CVMFS_REMOVE_THEN_BUILD - CVMFS_BUILD, then CVMFS_REMOVE
     required: true
   # OPTIONAL
   cvmfs_dest_dir:
     description: |
       IF USING CVMFS:
         the CVMFS directory to place the singularity image built from the docker image
+    default: ""
+    required: false
+  cvmfs_remove_images:
+    description: |
+      IF REMOVING ON CVMFS ('input.action' is 'CVMFS_REMOVE' or 'CVMFS_REMOVE_THEN_BUILD'):
+        the images to remove on CVMFS -- newline-delimited
+        images can be a pattern-based or verbatim -- see 'WIPACrepo/build-singularity-cvmfs-action'
     default: ""
     required: false
   free_disk_space:
