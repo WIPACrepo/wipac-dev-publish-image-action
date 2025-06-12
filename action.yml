@@ -33,8 +33,6 @@ runs:
   steps:
 
     - name: Validate and Prep Image Tag Variables
-      outputs:
-        IMAGE_TAG_NAME: ${{ steps.vars.outputs.image_tag_name }}
       run: |
         # step: Validate and Prep Image Tag Variables
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
@@ -51,7 +49,7 @@ runs:
             echo "::error::IMAGE must not include a tag or digest"
             exit 1
         else
-            echo "image_tag_name=$last_segment" >> "$GITHUB_OUTPUT"
+            echo "IMAGE_TAG_NAME=$last_segment" >> "$GITHUB_ENV"
         fi
 
       shell: bash
@@ -60,7 +58,7 @@ runs:
     # if: github.event_name != 'delete' && github.event.inputs.do_delete != 'true'
 
     - uses: jlumbroso/free-disk-space@main  # clears space for image build
-      if: ${{ env.FREE_DISK_SPACE == 'true' }}
+      if: ${{ inputs.free-disk-space == 'true' }}
       with:
         docker-images: false  # keep docker otherwise build will re-download them
 
@@ -72,7 +70,7 @@ runs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          ${{ env.IMAGE }}
+          ${{ inputs.image }}
         tags: |
           # branches (PRs)
           type=sha,prefix={{branch}}-,enable=${{ github.ref_type == 'branch' }}
@@ -82,14 +80,14 @@ runs:
           type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.ref_type == 'tag' }}
 
     - name: Login to Docker Hub
-      if: ${{ ! startsWith(env.IMAGE, 'ghcr.io/') }}
+      if: ${{ ! startsWith(inputs.image, 'ghcr.io/') }}
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Login to GitHub Container Registry
-      if: ${{ startsWith(env.IMAGE, 'ghcr.io/') }}
+      if: ${{ startsWith(inputs.image, 'ghcr.io/') }}
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
@@ -97,7 +95,7 @@ runs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Setup QEMU (if platform requires it)
-      if: contains(github.event.inputs.platform || env.DEFAULT_PLATFORM, 'arm')
+      if: contains(inputs.arch-platform, 'arm')
       uses: docker/setup-qemu-action@v2
 
     - uses: docker/setup-buildx-action@v2
@@ -105,7 +103,7 @@ runs:
     - uses: docker/build-push-action@v3
       with:
         context: .
-        platforms: ${{ github.event.inputs.platform || env.DEFAULT_PLATFORM }}
+        platforms: ${{ inputs.arch-platform }}
         push: true
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
@@ -121,7 +119,7 @@ runs:
       uses: docker/metadata-action@v4
       with:
         images: |
-          ${{ env.IMAGE }}
+          ${{ inputs.image }}
         flavor: |
           latest=false
         tags: |
@@ -136,7 +134,7 @@ runs:
       with:
         github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # so job can git push
         docker_tags: ${{ steps.docker_meta.outputs.tags }}
-        dest_dir: ${{ env.CVMFS_DEST_DIR }}  # Required for constructing path pattern
+        dest_dir: ${{ inputs.cvmfs-dest-dir }}  # Required for constructing path pattern
 
     # cvmfs-removal:
     # if: github.event_name == 'delete' || github.event.inputs.do_delete == 'true'
@@ -149,5 +147,5 @@ runs:
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}  # so job can git push
-        delete_image_tags: "${{ needs.image-tag-prep.outputs.IMAGE_TAG_NAME }}:${{ github.ref_name }}-[SHA]"
-        dest_dir: ${{ env.CVMFS_DEST_DIR }}  # Required for constructing path pattern
+        delete_image_tags: "${{ env.IMAGE_TAG_NAME }}:${{ github.ref_name }}-[SHA]"
+        dest_dir: ${{ inputs.cvmfs-dest-dir }}  # Required for constructing path pattern
