@@ -151,7 +151,7 @@ runs:
       env:
         TAGS: ${{ inputs.cvmfs_remove_tags }}
       run: |
-        # step: ???  # TODO: set `name` or `id` attr
+        # step: Generate CVMFS image nametags to remove  # fmt:ok
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
 
         if [[ -n "$TAGS" ]]; then
@@ -247,5 +247,5 @@ runs:
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
-
+        dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
         build_images: ${{ steps.docker_meta.outputs.tags }}
