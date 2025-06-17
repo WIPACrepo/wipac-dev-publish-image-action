@@ -77,27 +77,29 @@ runs:
         fi
       shell: bash
 
-    - name: Determine if image needs to be built
+    - name: Action determination logic (set defaults)
       if: always()
       run: |
-        # step: Determine if image needs to be built
+        # step: Action determination logic (set defaults)
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
-        
-        build_actions=(
-          BUILD
-          CVMFS_BUILD
-          CVMFS_REMOVE_THEN_BUILD
-        )
-        
-        # IF: action says to build
-        for action in "${build_actions[@]}"; do
-          if [[ "${{ inputs.action }}" == "$action" ]]; then
-            echo "DOES_ACTION_NEED_BUILD=true" >> "$GITHUB_ENV"
-            exit 0
-          fi
-        done
-        # ELSE:
-        echo "DOES_ACTION_NEED_BUILD=false" >> "$GITHUB_ENV"
+        echo "DO_BUILD=false" >> "$GITHUB_ENV"
+        echo "DO_CVMFS_BUILD=false" >> "$GITHUB_ENV"
+        echo "DO_CVMFS_REMOVE=false" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Action determination logic - DO_BUILD
+      if: inputs.action == 'BUILD'
+      run: echo "DO_BUILD=true" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Action determination logic - DO_CVMFS_BUILD
+      if: inputs.action == 'CVMFS_BUILD' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+      run: echo "DO_CVMFS_BUILD=true" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Action determination logic - DO_CVMFS_REMOVE
+      if: inputs.action == 'CVMFS_REMOVE' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+      run: echo "DO_CVMFS_REMOVE=true" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Summary (appears in GitHub UI)
@@ -120,10 +122,10 @@ runs:
           echo ""
           echo "### 📦 Docker Image"
           echo "- **Image Name**: \`${{ env.IMAGE_NAME }}\`"
-          echo "- **Build Required**: \`${{ env.DOES_ACTION_NEED_BUILD }}\`"
+          echo "- **Build Required**: \`${{ env.DO_BUILD }}\`"
           echo ""
           echo "### 📤 Status"
-          if [[ "${{ env.DOES_ACTION_NEED_BUILD }}" == "true" ]]; then
+          if [[ "${{ env.DO_BUILD }}" == "true" ]]; then
             echo "- ✅ Docker image will be built and published"
           else
             echo "- ❎ Docker build skipped"
@@ -146,7 +148,7 @@ runs:
     # Action: Remove CVMFS
     ####################################################################################
 
-    - if: inputs.action == 'CVMFS_REMOVE' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+    - if: env.DO_CVMFS_REMOVE == 'true'
       name: Request Removing Image(s) from CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
@@ -159,17 +161,17 @@ runs:
     # Action: Build + Publish Docker Image
     ####################################################################################
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true' && inputs.free_disk_space == 'true'
+    - if: env.DO_BUILD == 'true' && inputs.free_disk_space == 'true'
       uses: jlumbroso/free-disk-space@main  # clears space for image build
       with:
         docker-images: false  # keep docker otherwise build will re-download them
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true'
+    - if: env.DO_BUILD == 'true'
       uses: actions/checkout@v4
       with:
         ref: ${{ github.sha }}  # lock to triggered commit (github.ref is dynamic)
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true'
+    - if: env.DO_BUILD == 'true'
       id: docker_meta
       uses: docker/metadata-action@v4
       with:
@@ -183,14 +185,14 @@ runs:
           type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
           type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.ref_type == 'tag' }}
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true' && ! startsWith(inputs.image, 'ghcr.io/')
+    - if: env.DO_BUILD == 'true' && ! startsWith(inputs.image, 'ghcr.io/')
       name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true' && startsWith(inputs.image, 'ghcr.io/')
+    - if: env.DO_BUILD == 'true' && startsWith(inputs.image, 'ghcr.io/')
       name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
@@ -198,14 +200,14 @@ runs:
         username: ${{ github.actor }}
         password: ${{ inputs.github_token }}
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true' && contains(inputs.build_platform, 'arm')
+    - if: env.DO_BUILD == 'true' && contains(inputs.build_platform, 'arm')
       name: Setup QEMU (if platform requires it)
       uses: docker/setup-qemu-action@v2
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true'
+    - if: env.DO_BUILD == 'true'
       uses: docker/setup-buildx-action@v2
 
-    - if: env.DOES_ACTION_NEED_BUILD == 'true'
+    - if: env.DO_BUILD == 'true'
       uses: docker/build-push-action@v3
       with:
         context: .
@@ -219,7 +221,7 @@ runs:
     # Action: Build Image on CVMFS
     ####################################################################################
 
-    - if: inputs.action == 'CVMFS_BUILD' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+    - if: env.DO_CVMFS_BUILD == 'true'
       name: Request Building Singularity Image(s) on CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
