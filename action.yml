@@ -62,7 +62,7 @@ runs:
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
         
         # validate slash-format
-        if [[ ! "$IMAGE" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
+        if [[ ! "{$IMAGE}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
             echo "::error::IMAGE must be in the form 'namespace/image' or 'registry/namespace/image'"
             exit 1
         fi
@@ -105,12 +105,39 @@ runs:
       run: |
         # step: Summary (appears in GitHub UI)
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
+
         {
-          echo "### Build Summary"
-          echo "- Image: \`${{ inputs.image }}\`"
-          echo "- Action: \`${{ inputs.action }}\`"
-          echo "- Build: \`${{ env.DOES_ACTION_NEED_BUILD }}\`"
-          echo "- Platform: \`${{ inputs.build_platform }}\`"
+          echo "# 🚀 Build & Publish Summary"
+          echo ""
+          echo "### 🔧 Inputs"
+          echo "- **Image**: \`${{ inputs.image }}\`"
+          echo "- **Action**: \`${{ inputs.action }}\`"
+          echo "- **Platform**: \`${{ inputs.build_platform }}\`"
+          echo "- **Free Disk Space**: \`${{ inputs.free_disk_space }}\`"
+          if [[ "${{ inputs.cvmfs_dest_dir }}" != "" ]]; then
+            echo "- **CVMFS Destination**: \`${{ inputs.cvmfs_dest_dir }}\`"
+          fi
+          echo ""
+          echo "### 📦 Docker Image"
+          echo "- **Tag**: \`${{ env.IMAGE_TAG_NAME }}\`"
+          echo "- **Build Required**: \`${{ env.DOES_ACTION_NEED_BUILD }}\`"
+          echo ""
+          echo "### 📤 Status"
+          if [[ "${{ env.DOES_ACTION_NEED_BUILD }}" == "true" ]]; then
+            echo "- ✅ Docker image will be built and published"
+          else
+            echo "- ❎ Docker build skipped"
+          fi
+
+          if [[ "${{ inputs.action }}" == "CVMFS_BUILD" || "${{ inputs.action }}" == "CVMFS_REMOVE_THEN_BUILD" ]]; then
+            echo "- ✅ Singularity image build requested on CVMFS"
+          elif [[ "${{ inputs.action }}" == "CVMFS_REMOVE" ]]; then
+            echo "- 🗑️ CVMFS image removal requested"
+          fi
+
+          echo ""
+          echo "---"
+          echo "_Generated on: $(date -u +"%Y-%m-%d %H:%M:%S UTC")_"
         } >> "$GITHUB_STEP_SUMMARY"
       shell: bash
 
