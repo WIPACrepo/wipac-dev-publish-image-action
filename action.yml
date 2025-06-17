@@ -52,10 +52,11 @@ runs:
   steps:
 
     ####################################################################################
-    # ALL MODES
+    # Prep before action logic
     ####################################################################################
 
     - name: Validate and Prep Image Tag Variables
+      if: always()
       run: |
         # step: Validate and Prep Image Tag Variables
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
@@ -77,14 +78,40 @@ runs:
       shell: bash
 
     - name: Determine if image needs to be built
-      if: |
-        inputs.action == 'BUILD' || 
-        inputs.action == 'CVMFS_BUILD' || 
-        inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+      if: always()
       run: |
         # step: Determine if image needs to be built
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
-        echo "DOES_ACTION_NEED_BUILD=true" >> "$GITHUB_ENV"
+        
+        build_actions=(
+          BUILD
+          CVMFS_BUILD
+          CVMFS_REMOVE_THEN_BUILD
+        )
+        
+        # IF: action says to build
+        for action in "${build_actions[@]}"; do
+          if [[ "${{ inputs.action }}" == "$action" ]]; then
+            echo "DOES_ACTION_NEED_BUILD=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+        done
+        # ELSE:
+        echo "DOES_ACTION_NEED_BUILD=false" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Summary (appears in GitHub UI)
+      if: always()
+      run: |
+        # step: Summary (appears in GitHub UI)
+        set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
+        {
+          echo "### Build Summary"
+          echo "- Image: \`${{ inputs.image }}\`"
+          echo "- Action: \`${{ inputs.action }}\`"
+          echo "- Build: \`${{ env.DOES_ACTION_NEED_BUILD }}\`"
+          echo "- Platform: \`${{ inputs.build_platform }}\`"
+        } >> "$GITHUB_STEP_SUMMARY"
       shell: bash
 
 
