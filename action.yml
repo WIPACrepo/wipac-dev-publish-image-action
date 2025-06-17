@@ -147,7 +147,7 @@ runs:
     ####################################################################################
 
     - if: inputs.action == 'CVMFS_REMOVE' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
-      name: CVMFS Request Removal(s)
+      name: Request Removing Image(s) from CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
@@ -220,7 +220,7 @@ runs:
     ####################################################################################
 
     - if: inputs.action == 'CVMFS_BUILD' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
-      name: Request Build(s)
+      name: Request Building Singularity Image(s) on CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
