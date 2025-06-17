@@ -63,7 +63,7 @@ runs:
         
         # validate slash-format
         if [[ ! "${IMAGE}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
-            echo "::error::IMAGE must be in the form 'namespace/image' or 'registry/namespace/image'"
+            echo "::error::IMAGE must be in the form 'NAMESPACE/IMAGE' or 'REGISTRY/NAMESPACE/IMAGE'"
             exit 1
         fi
         
