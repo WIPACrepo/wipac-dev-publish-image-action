@@ -37,6 +37,7 @@ inputs:
     description: |
       IF BUILDING IMAGE (else, var is ignored):
         what CPU architecture platform to use when building the image
+      Ex: '\$\{{ github.event.inputs.platform || env.DEFAULT_PLATFORM }}'
     default: "linux/amd64"
     required: false
   cvmfs_remove_tags:
