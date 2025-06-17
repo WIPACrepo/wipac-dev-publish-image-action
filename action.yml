@@ -147,7 +147,7 @@ runs:
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
 
         {
-          echo "# 🚀 Workflow Plan"
+          echo "# 🚀 `WIPACrepo/wipac-dev-publish-image-action` Plan"
           echo ""
           echo "### 🔧 Inputs"
           echo "- \`image\` = ${{ inputs.image }}"
