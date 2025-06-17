@@ -54,32 +54,6 @@ runs:
 
   steps:
 
-    ####################################################################################
-    # Prep before action logic
-    ####################################################################################
-
-    - name: Validate and Prep Image Tag Variables
-      if: always()
-      run: |
-        # step: Validate and Prep Image Tag Variables
-        set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
-        
-        # validate slash-format
-        if [[ ! "${{ inputs.image }}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
-            echo "::error::'inputs.image' (${{ inputs.image }}) must be in the form 'NAMESPACE/IMAGE' or 'REGISTRY/NAMESPACE/IMAGE'"
-            exit 1
-        fi
-        
-        # validate there's no tag or digest attached
-        last_segment=$(basename "${{ inputs.image }}")
-        if [[ "$last_segment" == *:* || "$last_segment" == *@* ]]; then
-            echo "::error::'inputs.image' (${{ inputs.image }}) must not include a tag or digest"
-            exit 1
-        else
-            echo "IMAGE_NAME=$last_segment" >> "$GITHUB_ENV"
-        fi
-      shell: bash
-
     - name: Action determination logic (set defaults)
       if: always()
       run: |
@@ -110,6 +84,45 @@ runs:
         inputs.action == 'CVMFS_BUILD' || 
         inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
       run: echo "DO_3_CVMFS_BUILD=true" >> "$GITHUB_ENV"
+      shell: bash
+
+
+    ####################################################################################
+    # Prep before action logic
+    ####################################################################################
+
+    - name: Validate and Prep Image Tag Variables
+      if: always()
+      run: |
+        # step: Validate and Prep Image Tag Variables
+        set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
+        
+        # validate slash-format
+        if [[ ! "${{ inputs.image }}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
+            echo "::error::'inputs.image' (${{ inputs.image }}) must be in the form 'NAMESPACE/IMAGE' or 'REGISTRY/NAMESPACE/IMAGE'"
+            exit 1
+        fi
+        
+        # validate there's no tag or digest attached
+        last_segment=$(basename "${{ inputs.image }}")
+        if [[ "$last_segment" == *:* || "$last_segment" == *@* ]]; then
+            echo "::error::'inputs.image' (${{ inputs.image }}) must not include a tag or digest"
+            exit 1
+        else
+            echo "IMAGE_NAME=$last_segment" >> "$GITHUB_ENV"
+        fi
+      shell: bash
+
+    - name: Validate required CVMFS input(s)
+      if: env.DO_1_CVMFS_REMOVE == 'true' || env.DO_3_CVMFS_BUILD == 'true'
+      run: |
+        # step: Validate required CVMFS input(s)
+        set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
+
+        if [[ -z "${{ inputs.cvmfs_dest_dir }}" ]]; then
+          echo "::error::'inputs.cvmfs_dest_dir' must be provided when removing or building images on CVMFS"
+          exit 1
+        fi
       shell: bash
 
     - name: Summary (appears in GitHub UI)
