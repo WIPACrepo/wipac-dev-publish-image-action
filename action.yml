@@ -24,14 +24,14 @@ inputs:
     description: |
       IF USING DOCKER HUB (else, var is ignored):
         the dockerhub username needed for publishing the image
-      HINT: use ${{ secrets.DOCKERHUB_USERNAME }}
+      HINT: use $ {{ secrets.DOCKERHUB_USERNAME }} (no space after $)
     default: ""
     required: false
   dockerhub_token:
     description: |
       IF USING DOCKER HUB (else, var is ignored):
         the dockerhub token (password) needed for publishing the image
-      HINT: use ${{ secrets.DOCKERHUB_TOKEN }}
+      HINT: use $ {{ secrets.DOCKERHUB_TOKEN }} (no space after $)
     default: ""
     required: false
   cvmfs_dest_dir:
@@ -51,7 +51,7 @@ inputs:
     description: |
       IF BUILDING IMAGE (else, var is ignored):
         what CPU architecture platform to use when building the image
-      Ex: '\$\{{ github.event.inputs.platform || env.DEFAULT_PLATFORM }}'
+      Ex: '$ {{ github.event.inputs.platform || env.DEFAULT_PLATFORM }}' (no space after $)
     default: "linux/amd64"
     required: false
   cvmfs_remove_tags:
@@ -59,7 +59,7 @@ inputs:
       IF REMOVING ON CVMFS (else, var is ignored):
         the image **TAGS** (i.e. 'bar' in 'baz/foo:bar') to remove on CVMFS -- newline-delimited
         tags can be a pattern-based or verbatim -- see https://github.com/WIPACrepo/build-singularity-cvmfs-action
-      Ex: '\$\{{ github.ref_name }}-[SHA]'
+      Ex: '$ {{ github.ref_name }}-[SHA]' (no space after $)
     default: ""
     required: false
 
