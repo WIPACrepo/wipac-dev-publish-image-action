@@ -77,9 +77,16 @@ runs:
       run: |
         # step: Action determination logic (set defaults)
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
+        echo "DO_1_CVMFS_REMOVE=false" >> "$GITHUB_ENV"
         echo "DO_2_BUILD=false" >> "$GITHUB_ENV"
         echo "DO_3_CVMFS_BUILD=false" >> "$GITHUB_ENV"
-        echo "DO_1_CVMFS_REMOVE=false" >> "$GITHUB_ENV"
+      shell: bash
+
+    - name: Action determination logic - DO_1_CVMFS_REMOVE
+      if: |
+        inputs.action == 'CVMFS_REMOVE' || 
+        inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
+      run: echo "DO_1_CVMFS_REMOVE=true" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Action determination logic - DO_2_BUILD
@@ -95,13 +102,6 @@ runs:
         inputs.action == 'CVMFS_BUILD' || 
         inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
       run: echo "DO_3_CVMFS_BUILD=true" >> "$GITHUB_ENV"
-      shell: bash
-
-    - name: Action determination logic - DO_1_CVMFS_REMOVE
-      if: |
-        inputs.action == 'CVMFS_REMOVE' || 
-        inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
-      run: echo "DO_1_CVMFS_REMOVE=true" >> "$GITHUB_ENV"
       shell: bash
 
     - name: Summary (appears in GitHub UI)
