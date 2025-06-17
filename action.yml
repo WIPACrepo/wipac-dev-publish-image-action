@@ -142,7 +142,8 @@ runs:
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
-        delete_image_nametags: "${{ env.IMAGE_NAME }}:${{ github.ref_name }}-[SHA]"
+        delete_image_nametags: |
+          "${{ env.IMAGE_NAME }}:${{ github.ref_name }}-[SHA]"
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
 
 
@@ -167,9 +168,9 @@ runs:
         images: |
           ${{ inputs.image }}
         tags: |
-          # branches (PRs)
+          # running on: branch
           type=sha,prefix={{branch}}-,enable=${{ github.ref_type == 'branch' }}
-          # release tags
+          # running on: new tag
           type=semver,pattern={{major}},enable=${{ github.ref_type == 'tag' }}
           type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
           type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.ref_type == 'tag' }}
