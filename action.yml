@@ -29,7 +29,7 @@ inputs:
     description: |
       IF REMOVING ON CVMFS ('inputs.action' is 'CVMFS_REMOVE' or 'CVMFS_REMOVE_THEN_BUILD'):
         the images to remove on CVMFS -- newline-delimited
-        images can be a pattern-based or verbatim -- see 'WIPACrepo/build-singularity-cvmfs-action'
+        images can be a pattern-based or verbatim -- see https://github.com/WIPACrepo/build-singularity-cvmfs-action
     default: ""
     required: false
   free_disk_space:
