@@ -106,27 +106,22 @@ runs:
 
     - name: Summary (appears in GitHub UI)
       if: always()
-      env:
-        CVMFS_DEST: ${{ inputs.cvmfs_dest_dir }}
       run: |
         # step: Summary (appears in GitHub UI)
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
 
         {
-          echo "# 🚀 Build & Publish Plan"
+          echo "# 🚀 Workflow Plan"
           echo ""
           echo "### 🔧 Inputs"
           echo "- \`image\`: ${{ inputs.image }}"
           echo "- \`action\`: ${{ inputs.action }}"
           echo "- \`platform\`: ${{ inputs.build_platform }}"
           echo "- \`free_disk_space\`: ${{ inputs.free_disk_space }}"
-          [[ -n "$CVMFS_DEST" ]] && echo "- \`cvmfs_dest_dir\`: $CVMFS_DEST"
+          echo "- \`cvmfs_dest_dir\`: ${{ inputs.cvmfs_dest_dir }}"
           echo ""
-          echo "### 📋 Interpreted Flags"
+          echo "### 📋 Interpreted Configuration"
           echo "- \`image_name\`: ${{ env.IMAGE_NAME }}"
-          echo "- \`do_build\`: ${{ env.DO_BUILD }}"
-          echo "- \`do_cvmfs_build\`: ${{ env.DO_CVMFS_BUILD }}"
-          echo "- \`do_cvmfs_remove\`: ${{ env.DO_CVMFS_REMOVE }}"
           echo ""
           echo "### ⏭️ Planned Steps"
           [[ "${{ env.DO_CVMFS_REMOVE }}" == 'true' ]] && echo "- Will request CVMFS image removal"
