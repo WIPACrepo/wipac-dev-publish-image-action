@@ -62,7 +62,7 @@ runs:
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
         
         # validate slash-format
-        if [[ ! "{$IMAGE}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
+        if [[ ! "${IMAGE}" =~ ^[^/]+/[^/]+(/[^/]+)?$ ]]; then
             echo "::error::IMAGE must be in the form 'namespace/image' or 'registry/namespace/image'"
             exit 1
         fi
