@@ -16,7 +16,7 @@ inputs:
         BUILD        - build and publish 'input.image'
         CVMFS_BUILD  - BUILD, then request CVMFS to build and persist 'input.image'
         CVMFS_REMOVE - request CVMFS to delete 'input.cvmfs_remove_images'
-        CVMFS_REMOVE_THEN_BUILD - CVMFS_BUILD, then CVMFS_REMOVE
+        CVMFS_REMOVE_THEN_CVMFS_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
   # OPTIONAL
   cvmfs_dest_dir:
@@ -51,6 +51,10 @@ runs:
 
   steps:
 
+    ####################################################################################
+    # ALL MODES
+    ####################################################################################
+
     - name: Validate and Prep Image Tag Variables
       run: |
         # step: Validate and Prep Image Tag Variables
@@ -73,19 +77,36 @@ runs:
 
       shell: bash
 
-    # docker:
-    # if: github.event_name != 'delete' && github.event.inputs.do_delete != 'true'
 
-    - uses: jlumbroso/free-disk-space@main  # clears space for image build
-      if: ${{ inputs.free_disk_space == 'true' }}
+    ####################################################################################
+    # Action: Remove CVMFS
+    ####################################################################################
+
+    - if: contains(inputs.action, 'CVMFS_REMOVE')
+      name: CVMFS Request Removal(s)
+      uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
+      with:
+        github_token: ${{ inputs.github_token }}  # so job can git push
+        delete_image_tags: "${{ env.IMAGE_TAG_NAME }}:${{ github.ref_name }}-[SHA]"
+        dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
+
+
+    ####################################################################################
+    # Action: Build + Publish Docker Image
+    ####################################################################################
+
+    - if: contains(inputs.action, 'BUILD') && inputs.free_disk_space == 'true'
+      uses: jlumbroso/free-disk-space@main  # clears space for image build
       with:
         docker-images: false  # keep docker otherwise build will re-download them
 
-    - uses: actions/checkout@v4
+    - if: contains(inputs.action, 'BUILD')
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.sha }}  # lock to triggered commit (github.ref is dynamic)
 
-    - id: docker_meta
+    - if: contains(inputs.action, 'BUILD')
+      id: docker_meta
       uses: docker/metadata-action@v4
       with:
         images: |
@@ -98,28 +119,30 @@ runs:
           type=semver,pattern={{major}}.{{minor}},enable=${{ github.ref_type == 'tag' }}
           type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.ref_type == 'tag' }}
 
-    - name: Login to Docker Hub
-      if: ${{ ! startsWith(inputs.image, 'ghcr.io/') }}
+    - if: contains(inputs.action, 'BUILD') && ! startsWith(inputs.image, 'ghcr.io/')
+      name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login to GitHub Container Registry
-      if: ${{ startsWith(inputs.image, 'ghcr.io/') }}
+    - if: contains(inputs.action, 'BUILD') && startsWith(inputs.image, 'ghcr.io/')
+      name: Login to GitHub Container Registry
       uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
         password: ${{ inputs.github_token }}
 
-    - name: Setup QEMU (if platform requires it)
-      if: contains(inputs.build_platform, 'arm')
+    - if: contains(inputs.action, 'BUILD') && contains(inputs.build_platform, 'arm')
+      name: Setup QEMU (if platform requires it)
       uses: docker/setup-qemu-action@v2
 
-    - uses: docker/setup-buildx-action@v2
+    - if: contains(inputs.action, 'BUILD')
+      uses: docker/setup-buildx-action@v2
 
-    - uses: docker/build-push-action@v3
+    - if: contains(inputs.action, 'BUILD')
+      uses: docker/build-push-action@v3
       with:
         context: .
         platforms: ${{ inputs.build_platform }}
@@ -127,44 +150,15 @@ runs:
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
 
-    # cvmfs-build:
-    # if: github.event_name != 'delete' && github.event.inputs.do_delete != 'true'
 
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.sha }}  # lock to triggered commit (github.ref is dynamic)
+    ####################################################################################
+    # Action: Build Image on CVMFS
+    ####################################################################################
 
-    - id: docker_meta
-      uses: docker/metadata-action@v4
-      with:
-        images: |
-          ${{ inputs.image }}
-        flavor: |
-          latest=false
-        tags: |
-          # we only want to put version/sha-specific images on CVMFS
-          # branches (PRs)
-          type=sha,prefix={{branch}}-,enable=${{ github.ref_type == 'branch' }}
-          # release tags
-          type=semver,pattern={{major}}.{{minor}}.{{patch}},enable=${{ github.ref_type == 'tag' }}
-
-    - name: Request Build(s)
+    - if: contains(inputs.action, 'CVMFS_BUILD')
+      name: Request Build(s)
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
         docker_tags: ${{ steps.docker_meta.outputs.tags }}
-        dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
-
-    # cvmfs-removal:
-    # if: github.event_name == 'delete' || github.event.inputs.do_delete == 'true'
-
-    - uses: actions/checkout@v4
-      with:
-        ref: ${{ github.sha }}  # lock to triggered commit (github.ref is dynamic)
-
-    - name: CVMFS Request Removal(s)
-      uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
-      with:
-        github_token: ${{ inputs.github_token }}  # so job can git push
-        delete_image_tags: "${{ env.IMAGE_TAG_NAME }}:${{ github.ref_name }}-[SHA]"
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
