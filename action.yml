@@ -146,7 +146,7 @@ runs:
     # Action: Remove CVMFS
     ####################################################################################
 
-    - if: contains(inputs.action, 'CVMFS_REMOVE')
+    - if: inputs.action == 'CVMFS_REMOVE' || inputs.action == 'CVMFS_REMOVE_THEN_BUILD'
       name: CVMFS Request Removal(s)
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
