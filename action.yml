@@ -13,9 +13,9 @@ inputs:
   action:
     description: |
       what action to perform
-        BUILD        - build and publish 'input.image'
-        CVMFS_BUILD  - BUILD, then request CVMFS to build and persist 'input.image'
-        CVMFS_REMOVE - request CVMFS to delete 'input.cvmfs_remove_images'
+        BUILD                   - build and publish 'input.image'
+        CVMFS_BUILD             - BUILD, then request CVMFS to build and persist 'input.image'
+        CVMFS_REMOVE            - request CVMFS to delete 'input.cvmfs_remove_images'
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
   # OPTIONAL
