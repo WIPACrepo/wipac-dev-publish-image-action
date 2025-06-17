@@ -142,7 +142,7 @@ runs:
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
-        delete_image_tags: "${{ env.IMAGE_NAME }}:${{ github.ref_name }}-[SHA]"
+        delete_image_nametags: "${{ env.IMAGE_NAME }}:${{ github.ref_name }}-[SHA]"
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
 
 
@@ -215,5 +215,5 @@ runs:
       uses: WIPACrepo/build-singularity-cvmfs-action@v2.0
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
-        docker_tags: ${{ steps.docker_meta.outputs.tags }}
+        build_images: ${{ steps.docker_meta.outputs.tags }}
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
