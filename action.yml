@@ -146,24 +146,28 @@ runs:
     ####################################################################################
 
     - if: env.DO_1_CVMFS_REMOVE == 'true'
-      name: Determine CVMFS nametags to remove
+      id: gen_cvmfs_nametags
+      name: Generate CVMFS image nametags to remove
       env:
         TAGS: ${{ inputs.cvmfs_remove_tags }}
       run: |
         # step: ???  # TODO: set `name` or `id` attr
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
-        
+
         if [[ -n "$TAGS" ]]; then
             python3 -c 'import os; print("\n".join(f"{os.environ[\"IMAGE_NAME\"]}:{tag.strip()}" for tag in os.environ["TAGS"].splitlines() if tag.strip()))' > delete_image_nametags.txt
         else
             echo "::error::'inputs.cvmfs_remove_tags' (${{ inputs.cvmfs_remove_tags }}) must be given in order to remove CVMFS images"
             exit 1
         fi
-        
-        echo "DELETE_IMAGE_NAMETAGS<<EOF" >> "$GITHUB_ENV"
-        cat delete_image_nametags.txt >> "$GITHUB_ENV"
-        echo "EOF" >> "$GITHUB_ENV"
+
+        {
+          echo "delete_image_nametags<<EOF"
+          cat delete_image_nametags.txt
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
       shell: bash
+
 
     - if: env.DO_1_CVMFS_REMOVE == 'true'
       name: Request Removing Image(s) from CVMFS
@@ -171,7 +175,7 @@ runs:
       with:
         github_token: ${{ inputs.github_token }}  # so job can git push
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
-        delete_image_nametags: ${{ env.DELETE_IMAGE_NAMETAGS }}
+        delete_image_nametags: ${{ steps.gen_cvmfs_nametags.outputs.delete_image_nametags }}
 
 
     ####################################################################################
