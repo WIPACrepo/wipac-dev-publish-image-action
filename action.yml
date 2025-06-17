@@ -13,9 +13,9 @@ inputs:
   action:
     description: |
       what action to perform
-        BUILD                   - build and publish 'input.image'
-        CVMFS_BUILD             - BUILD, then request CVMFS to build and persist 'input.image'
-        CVMFS_REMOVE            - request CVMFS to delete 'input.cvmfs_remove_images'
+        BUILD                   - build and publish 'inputs.image'
+        CVMFS_BUILD             - BUILD, then request CVMFS to build and persist 'inputs.image'
+        CVMFS_REMOVE            - request CVMFS to delete 'inputs.cvmfs_remove_images'
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
   # OPTIONAL
@@ -27,7 +27,7 @@ inputs:
     required: false
   cvmfs_remove_images:
     description: |
-      IF REMOVING ON CVMFS ('input.action' is 'CVMFS_REMOVE' or 'CVMFS_REMOVE_THEN_BUILD'):
+      IF REMOVING ON CVMFS ('inputs.action' is 'CVMFS_REMOVE' or 'CVMFS_REMOVE_THEN_BUILD'):
         the images to remove on CVMFS -- newline-delimited
         images can be a pattern-based or verbatim -- see 'WIPACrepo/build-singularity-cvmfs-action'
     default: ""
