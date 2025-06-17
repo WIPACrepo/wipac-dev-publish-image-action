@@ -20,6 +20,18 @@ inputs:
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
   # OPTIONAL
+  dockerhub_username:
+    description: |
+      IF USING DOCKER HUB (else, var is ignored):
+        the dockerhub username needed for publishing the image
+    default: ""
+    required: false
+  dockerhub_token:
+    description: |
+      IF USING DOCKER HUB (else, var is ignored):
+        the dockerhub token (password) needed for publishing the image
+    default: ""
+    required: false
   cvmfs_dest_dir:
     description: |
       IF USING CVMFS (else, var is ignored):
@@ -225,8 +237,8 @@ runs:
       name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        username: ${{ inputs.dockerhub_username }}
+        password: ${{ inputs.dockerhub_token }}
 
     - if: env.DO_2_BUILD == 'true' && startsWith(inputs.image, 'ghcr.io/')
       name: Login to GitHub Container Registry
