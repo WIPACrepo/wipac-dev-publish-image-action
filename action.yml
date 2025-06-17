@@ -1,10 +1,6 @@
 name: Build/Publish Docker Images and, optionally, Singularity Images on CVMFS
 
 inputs:
-  github_token:
-    description: |
-      a PAT so the action can git push to github (images and cvmfs requests)
-    required: true
   image:
     description: |
       the full-qualified image (tagless) --
@@ -20,6 +16,19 @@ inputs:
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
   # OPTIONAL
+  gh_cvmfs_token:
+    description: |
+      IF USING CVMFS (else, var is ignored):
+      a PAT so the action can git push to GitHub (used for CVMFS build/removal requests)
+    default: ""
+    required: true
+  ghcr_token:
+    description: |
+      IF USING ghcr.io (else, var is ignored):
+        a GitHub token for authenticating with ghcr.io when pushing Docker images
+      HINT: use $ {{ secrets.GITHUB_TOKEN }} (no space after $)
+    default: ""
+    required: true
   dockerhub_username:
     description: |
       IF USING DOCKER HUB (else, var is ignored):
@@ -202,7 +211,7 @@ runs:
       name: Request Removing Image(s) from CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@main
       with:
-        github_token: ${{ inputs.github_token }}  # so job can git push
+        github_token: ${{ inputs.gh_cvmfs_token }}  # so job can git push
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
         delete_image_nametags: ${{ steps.gen_cvmfs_nametags.outputs.delete_image_nametags }}
 
@@ -248,7 +257,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ inputs.github_token }}
+        password: ${{ inputs.ghcr_token }}
 
     - if: env.DO_2_BUILD == 'true' && contains(inputs.build_platform, 'arm')
       name: Setup QEMU (if platform requires it)
@@ -275,6 +284,6 @@ runs:
       name: Request Building Singularity Image(s) on CVMFS
       uses: WIPACrepo/build-singularity-cvmfs-action@main
       with:
-        github_token: ${{ inputs.github_token }}  # so job can git push
+        github_token: ${{ inputs.gh_cvmfs_token }}  # so job can git push
         dest_dir: ${{ inputs.cvmfs_dest_dir }}  # Required for constructing path pattern
         build_images: ${{ steps.docker_meta.outputs.tags }}
