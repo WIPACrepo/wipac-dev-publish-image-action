@@ -115,8 +115,8 @@ jobs:
         with:
           image: ghcr.io/myrepo/myimage
           action: ${{ steps.set_action.outputs.action }}
-          gh_cvmfs_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           ghcr_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_cvmfs_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           cvmfs_dest_dir: myorg/myrepo
           cvmfs_remove_tags: '${{ github.ref_name }}-[SHA]'
 ```
