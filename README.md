@@ -62,7 +62,7 @@ Here are a few examples, out of many possible configurations.
 
 ### Static/Single Action
 
-Docker Hub only:
+Build for Docker Hub only:
 
 ```yaml
 jobs:
@@ -77,7 +77,7 @@ jobs:
           dockerhub_token: ${{ secrets.DOCKERHUB_TOKEN }}
 ```
 
-ghcr.io + CVMFS:
+Build for ghcr.io + CVMFS:
 
 ```yaml
 jobs:
@@ -95,7 +95,7 @@ jobs:
 
 ### Dynamic/Flexible Action
 
-ghcr.io + CVMFS:
+Build and/or remove for ghcr.io + CVMFS:
 
 ```yaml
 jobs:
@@ -118,4 +118,5 @@ jobs:
           gh_cvmfs_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           ghcr_token: ${{ secrets.GITHUB_TOKEN }}
           cvmfs_dest_dir: ewms/observation-management-service/
+          cvmfs_remove_tags: '${{ github.ref_name }}-[SHA]'
 ```
