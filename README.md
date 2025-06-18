@@ -8,7 +8,7 @@ This GitHub Action builds and pushes Docker images to Docker Hub or GitHub Conta
 
 | Name     | Description                                                                                                                                                                                                                                                           |
 |----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `image`  | Fully qualified Docker image name with optional registry prefix.<br>⚠️ **Do not include a tag.** ⚠️<br>Examples: `ghcr.io/foo/bar`, `foo/bar` (Docker Hub)                                                                                                            |
+| `image`  | Fully qualified Docker image name with optional registry prefix.<br>⚠️ **Do not include a tag or digest.** ⚠️<br>Examples: `ghcr.io/foo/bar`, `foo/bar` (Docker Hub)                                                                                                  |
 | `action` | What to do:<br>- `BUILD` – Build and publish Docker image on registry<br>- `CVMFS_BUILD` – `BUILD`, then request CVMFS to build/persist it<br>- `CVMFS_REMOVE` – Remove Singularity image(s) from CVMFS<br>- `CVMFS_REMOVE_THEN_BUILD` – Remove then rebuild on CVMFS |
 
 #### Action Reference
