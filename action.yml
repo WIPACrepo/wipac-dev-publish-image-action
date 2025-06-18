@@ -15,20 +15,7 @@ inputs:
         CVMFS_REMOVE            - request CVMFS to delete 'inputs.cvmfs_remove_images'
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
-  # OPTIONAL: AUTH
-  gh_cvmfs_token:
-    description: |
-      IF USING CVMFS (else, var is ignored):
-      a PAT so the action can git push to GitHub (used for CVMFS build/removal requests)
-    default: ""
-    required: true
-  ghcr_token:
-    description: |
-      IF USING ghcr.io (else, var is ignored):
-        a GitHub token for authenticating with ghcr.io when pushing Docker images
-      HINT: use $ {{ secrets.GITHUB_TOKEN }} (no space after $)
-    default: ""
-    required: true
+  # OPTIONAL: Docker Hub
   dockerhub_username:
     description: |
       IF USING DOCKER HUB (else, var is ignored):
@@ -43,13 +30,36 @@ inputs:
       HINT: use $ {{ secrets.DOCKERHUB_TOKEN }} (no space after $)
     default: ""
     required: false
-  # OPTIONAL: FOR SPECIFIC USE CASES
+  # OPTIONAL: ghcr.io
+  ghcr_token:
+    description: |
+      IF USING ghcr.io (else, var is ignored):
+        a GitHub token for authenticating with ghcr.io when pushing Docker images
+      HINT: use $ {{ secrets.GITHUB_TOKEN }} (no space after $)
+    default: ""
+    required: true
+  # OPTIONAL: CVMFS
+  gh_cvmfs_token:
+    description: |
+      IF USING CVMFS (else, var is ignored):
+      a PAT so the action can git push to GitHub (used for CVMFS build/removal requests)
+    default: ""
+    required: true
   cvmfs_dest_dir:
     description: |
       IF USING CVMFS (else, var is ignored):
         the CVMFS directory to place the singularity image built from the docker image
     default: ""
     required: false
+  cvmfs_remove_tags:
+    description: |
+      IF REMOVING ON CVMFS (else, var is ignored):
+        the image **TAGS** (i.e. 'bar' in 'baz/foo:bar') to remove on CVMFS -- newline-delimited
+        tags can be a pattern-based or verbatim -- see https://github.com/WIPACrepo/build-singularity-cvmfs-action
+      Ex: '$ {{ github.ref_name }}-[SHA]' (no space after $)
+    default: ""
+    required: false
+  # OPTIONAL: misc build config
   free_disk_space:
     description: |
       IF BUILDING VERY LARGE IMAGES (else, var is ignored):
@@ -63,14 +73,6 @@ inputs:
         what CPU architecture platform to use when building the image
       Ex: '$ {{ github.event.inputs.platform || env.DEFAULT_PLATFORM }}' (no space after $)
     default: "linux/amd64"
-    required: false
-  cvmfs_remove_tags:
-    description: |
-      IF REMOVING ON CVMFS (else, var is ignored):
-        the image **TAGS** (i.e. 'bar' in 'baz/foo:bar') to remove on CVMFS -- newline-delimited
-        tags can be a pattern-based or verbatim -- see https://github.com/WIPACrepo/build-singularity-cvmfs-action
-      Ex: '$ {{ github.ref_name }}-[SHA]' (no space after $)
-    default: ""
     required: false
 
 
