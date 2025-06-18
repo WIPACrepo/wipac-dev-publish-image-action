@@ -15,7 +15,7 @@ inputs:
         CVMFS_REMOVE            - request CVMFS to delete 'inputs.cvmfs_remove_images'
         CVMFS_REMOVE_THEN_BUILD - CVMFS_REMOVE, then CVMFS_BUILD
     required: true
-  # OPTIONAL
+  # OPTIONAL: AUTH
   gh_cvmfs_token:
     description: |
       IF USING CVMFS (else, var is ignored):
@@ -43,6 +43,7 @@ inputs:
       HINT: use $ {{ secrets.DOCKERHUB_TOKEN }} (no space after $)
     default: ""
     required: false
+  # OPTIONAL: FOR SPECIFIC USE CASES
   cvmfs_dest_dir:
     description: |
       IF USING CVMFS (else, var is ignored):
