@@ -47,6 +47,8 @@ This GitHub Action builds and pushes Docker images to Docker Hub or GitHub Conta
 | `cvmfs_dest_dir`    | ✅, if using CVMFS                 | CVMFS destination directory for Singularity images                                                                                           |
 | `cvmfs_remove_tags` | ⚠️, only if removing CVMFS images | Newline-delimited list of image **tags** to remove from CVMFS (e.g., `latest`, `main-[SHA]`)                                                 |
 
+_All CVMFS Singularity images builds are handled by [`WIPACrepo/cvmfs-actions`](https://github.com/WIPACrepo/cvmfs-actions) and listed in its [docker_images.txt](https://github.com/WIPACrepo/cvmfs-actions/blob/main/docker_images.txt)_.
+
 #### Miscellaneous Build Configuration
 
 | Name              | Required | Description                                                             |
