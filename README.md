@@ -8,8 +8,17 @@ This GitHub Action builds and pushes Docker images to Docker Hub or GitHub Conta
 
 | Name     | Description                                                                                                                                                                                                                                            |
 |----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `image`  | Fully qualified Docker image name (without tag).<br>Examples: `ghcr.io/foo/bar`, `foo/bar`.                                                                                                                                                            |
+| `image`  | Fully qualified Docker image name with optional registry prefix.<br>⚠️ **Do not include a tag.** ⚠️<br>Examples: `ghcr.io/foo/bar`, `foo/bar` (Docker Hub)                                                                                             |
 | `action` | What to do:<br>- `BUILD` – Build and push Docker image<br>- `CVMFS_BUILD` – `BUILD`, then request CVMFS to build/persist it<br>- `CVMFS_REMOVE` – Remove Singularity image(s) from CVMFS<br>- `CVMFS_REMOVE_THEN_BUILD` – Remove then rebuild on CVMFS |
+
+#### Action Reference
+
+| Action                    | CVMFS Remove | Docker Build+Publish | CVMFS Build+Publish |
+|---------------------------|--------------|----------------------|---------------------|
+| `BUILD`                   |              | ✅                    |                     |
+| `CVMFS_BUILD`             |              | ✅ (1st)              | ✅ (2nd)             |
+| `CVMFS_REMOVE`            | ✅            |                      |                     |
+| `CVMFS_REMOVE_THEN_BUILD` | ✅ (1st)      | ✅ (2nd)              | ✅ (3rd)             |
 
 ### Optional
 
@@ -17,26 +26,26 @@ This GitHub Action builds and pushes Docker images to Docker Hub or GitHub Conta
 >
 > Many input attributes only apply to certain `action`-based use cases. However, by design, any irrelevant input attributes for a given use case will be ignored. This allows workflows to be flexible, by having only one `uses: WIPACRepo/wipac-dev-publish-image-action` section, with logic around `action`. See the workflow snippet in the [Example Usage section](#example-usage).
 
-#### If using DockerHub...
+#### If using DockerHub
 
-| Name                 | Required | Description         |
-|----------------------|----------|---------------------|
-| `dockerhub_username` | ✅        | Docker Hub username |
-| `dockerhub_token`    | ✅        | Docker Hub token    |
+| Name                 | Required                      | Description         |
+|----------------------|-------------------------------|---------------------|
+| `dockerhub_username` | ✅, if building for Docker Hub | Docker Hub username |
+| `dockerhub_token`    | ✅, if building for Docker Hub | Docker Hub token    |
 
-#### If using the GitHub Container Registry (ghcr.io)...
+#### If using the GitHub Container Registry (ghcr.io)
 
-| Name         | Required | Description                                    |
-|--------------|----------|------------------------------------------------|
-| `ghcr_token` | ✅        | GitHub token for authenticating with `ghcr.io` |
+| Name         | Required                     | Description                                    |
+|--------------|------------------------------|------------------------------------------------|
+| `ghcr_token` | ✅, if building for `ghcr.io` | GitHub token for authenticating with `ghcr.io` |
 
-#### If interacting with CVMFS...
+#### If interacting with CVMFS
 
-| Name                | Required                           | Description                                                                                                                                  |
-|---------------------|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
-| `gh_cvmfs_token`    | ✅                                  | GitHub PAT used to interact with  [`WIPACrepo/build-singularity-cvmfs-action`](https://github.com/WIPACrepo/build-singularity-cvmfs-action/) |
-| `cvmfs_dest_dir`    | ✅                                  | CVMFS destination directory for Singularity images                                                                                           |
-| `cvmfs_remove_tags` | yes, only if removing CVMFS images | Newline-delimited list of image **tags** to remove from CVMFS (e.g., `latest`, `main-[SHA]`)                                                 |
+| Name                | Required                          | Description                                                                                                                                  |
+|---------------------|-----------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `gh_cvmfs_token`    | ✅, if using CVMFS                 | GitHub PAT used to interact with  [`WIPACrepo/build-singularity-cvmfs-action`](https://github.com/WIPACrepo/build-singularity-cvmfs-action/) |
+| `cvmfs_dest_dir`    | ✅, if using CVMFS                 | CVMFS destination directory for Singularity images                                                                                           |
+| `cvmfs_remove_tags` | ⚠️, only if removing CVMFS images | Newline-delimited list of image **tags** to remove from CVMFS (e.g., `latest`, `main-[SHA]`)                                                 |
 
 #### Miscellaneous Build Configuration
 
