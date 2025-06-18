@@ -19,33 +19,31 @@ This GitHub Action builds and pushes Docker images to Docker Hub or GitHub Conta
 
 #### If using DockerHub...
 
-| Name                 | Required | Description                                        |
-|----------------------|----------|----------------------------------------------------|
-| `dockerhub_username` | ✅        | Docker Hub username (required if using Docker Hub) |
-| `dockerhub_token`    | ✅        | Docker Hub token (required                         
+| Name                 | Required | Description         |
+|----------------------|----------|---------------------|
+| `dockerhub_username` | ✅        | Docker Hub username |
+| `dockerhub_token`    | ✅        | Docker Hub token    |
 
 #### If using the GitHub Container Registry (ghcr.io)...
 
-| Name         | Required | Description                                                                       |
-|--------------|----------|-----------------------------------------------------------------------------------|
-| `ghcr_token` | ✅        | GitHub token for authenticating with `ghcr.io`. Use `${{ secrets.GITHUB_TOKEN }}` |
+| Name         | Required | Description                                    |
+|--------------|----------|------------------------------------------------|
+| `ghcr_token` | ✅        | GitHub token for authenticating with `ghcr.io` |
 
 #### If interacting with CVMFS...
 
-| Name                | Required                           | Description                                                                                                                    |
-|---------------------|------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| `gh_cvmfs_token`    | ✅                                  | GitHub PAT used to push to repo (required for CVMFS builds/removals)                                                           |
-| `cvmfs_dest_dir`    | ✅                                  | CVMFS destination directory for Singularity images. Required for CVMFS actions.                                                |
-| `cvmfs_remove_tags` | yes, only if removing CVMFS images | Newline-delimited list of image **tags** to remove from CVMFS (e.g., `latest`, `main-[SHA]`). Used in `CVMFS_REMOVE*` actions. |
+| Name                | Required                           | Description                                                                                                                                  |
+|---------------------|------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------|
+| `gh_cvmfs_token`    | ✅                                  | GitHub PAT used to interact with  [`WIPACrepo/build-singularity-cvmfs-action`](https://github.com/WIPACrepo/build-singularity-cvmfs-action/) |
+| `cvmfs_dest_dir`    | ✅                                  | CVMFS destination directory for Singularity images                                                                                           |
+| `cvmfs_remove_tags` | yes, only if removing CVMFS images | Newline-delimited list of image **tags** to remove from CVMFS (e.g., `latest`, `main-[SHA]`)                                                 |
 
 #### Miscellaneous Build Configuration
 
 | Name              | Required | Description                                                             |
 |-------------------|----------|-------------------------------------------------------------------------|
-| `free_disk_space` | no       | `true` to run cleanup on GitHub runner before building image            |
+| `free_disk_space` | no       | `true` to make space on GitHub runner before building image             |
 | `build_platform`  | no       | Target build platform. Default: `linux/amd64`<br>Example: `linux/arm64` |
-
----
 
 ## Example Usage
 
