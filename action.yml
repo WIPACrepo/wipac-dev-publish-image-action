@@ -174,7 +174,7 @@ runs:
           echo ""
           echo "### ⏭️ Planned Steps"
           [[ "${{ env.DO_1_CVMFS_REMOVE }}" == 'true' ]] && echo "- Will request CVMFS image removal"
-          [[ "${{ env.DO_2_BUILD }}" == 'true' ]] && echo "- Will build & push Docker image" || echo "- Will skip Docker build"
+          [[ "${{ env.DO_2_BUILD }}" == 'true' ]] && echo "- Will build & publish Docker image on registry" || echo "- Will skip Docker build"
           [[ "${{ env.DO_3_CVMFS_BUILD }}" == 'true' ]] && echo "- Will request CVMFS Singularity image build"
           echo ""
           echo "_Summary generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")_"
