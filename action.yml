@@ -191,16 +191,22 @@ runs:
       name: Generate CVMFS image nametags to remove
       env:
         TAGS: ${{ inputs.cvmfs_remove_tags }}
+        IMAGE_NAME: ${{ env.IMAGE_NAME }}
       run: |
         # step: Generate CVMFS image nametags to remove  # fmt:ok
         set -euo pipefail; echo "now: $(date -u +"%Y-%m-%dT%H:%M:%S.%3N")"
 
-        if [[ -n "$TAGS" ]]; then
-            python3 -c 'import os; print("\n".join(f"{os.environ[\"IMAGE_NAME\"]}:{tag.strip()}" for tag in os.environ["TAGS"].splitlines() if tag.strip()))' > delete_image_nametags.txt
-        else
-            echo "::error::'inputs.cvmfs_remove_tags' (${{ inputs.cvmfs_remove_tags }}) must be given in order to remove CVMFS images"
+        if [[ -z "$TAGS" ]]; then
+            echo "::error::'inputs.cvmfs_remove_tags' must be given in order to remove CVMFS images"
             exit 1
         fi
+
+        python3 -c '
+          import os
+          image_name = os.environ["IMAGE_NAME"]
+          tags = os.environ["TAGS"]
+          print("\n".join(f"{image_name}:{t.strip()}" for t in tags.splitlines() if t.strip()))
+        ' > delete_image_nametags.txt
 
         {
           echo "delete_image_nametags<<EOF"
