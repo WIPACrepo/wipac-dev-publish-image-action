@@ -86,7 +86,7 @@ jobs:
     steps:
       - uses: WIPACrepo/wipac-dev-publish-image-action@...
         with:
-          image: ghcr.io/myorg/myimage
+          image: ghcr.io/myrepo/myimage
           action: CVMFS_BUILD
           ghcr_token: ${{ secrets.GITHUB_TOKEN }}
           gh_cvmfs_token: ${{ secrets.CVMFS_PAT }}
@@ -113,10 +113,10 @@ jobs:
 
       - uses: WIPACrepo/wipac-dev-publish-image-action@...
         with:
-          image: ghcr.io/observation-management-service/ewms-condor-benchmarking
+          image: ghcr.io/myrepo/myimage
           action: ${{ steps.set_action.outputs.action }}
           gh_cvmfs_token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           ghcr_token: ${{ secrets.GITHUB_TOKEN }}
-          cvmfs_dest_dir: ewms/observation-management-service/
+          cvmfs_dest_dir: myorg/myrepo
           cvmfs_remove_tags: '${{ github.ref_name }}-[SHA]'
 ```
