@@ -201,11 +201,11 @@ runs:
             exit 1
         fi
 
-        python3 -c '
-          import os
-          image_name = os.environ["IMAGE_NAME"]
-          tags = os.environ["TAGS"]
-          print("\n".join(f"{image_name}:{t.strip()}" for t in tags.splitlines() if t.strip()))
+        python -c '
+        import os
+        image_name = os.environ["IMAGE_NAME"]
+        tags = os.environ["TAGS"]
+        print("\n".join(f"{image_name}:{t.strip()}" for t in tags.splitlines() if t.strip()))
         ' > delete_image_nametags.txt
 
         {
