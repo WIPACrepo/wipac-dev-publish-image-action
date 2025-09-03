@@ -68,7 +68,7 @@ inputs:
       IF REMOVING ON CVMFS (else, var is ignored):
         the image **TAGS** (i.e. 'bar' in 'baz/foo:bar') to remove on CVMFS -- newline-delimited
         tags can be a pattern-based or verbatim -- see https://github.com/WIPACrepo/build-singularity-cvmfs-action
-      Ex: '$ {{ github.ref_name }}-[SHA]' (no space after $)
+      Ex: '$ {{ github.event.ref }}-[SHA]' (no space after $)
     default: ""
     required: false
 
